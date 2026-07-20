@@ -1,9 +1,24 @@
-[package]
-name = "bare_api_rust"
-version = "0.1.0"
-edition = "2024"
+Небольшая async-библиотека для отправки base64-капчи на Bare API и получения ответа.
+Что Внутри : BareAPI с builder-подходом (через derive_builder).
+Отправка капчи на in.php и получение результата из res.php.
+Поддержка выбора типа капчи через префикс ключа.
+Библиотека асинхронная, поэтому нужен tokio.
 
-[dependencies]
-derive_builder = "0.20.2"
-reqwest = { version = "0.13.1", default-features = false, features = ["form", "query", "rustls"] }
-tokio = { version = "1.49.0", features = ["rt", "time"] }
+use bare_api_rust::{BareAPIBuilder, CaptchaType};
+
+#[tokio::main]
+async fn main() {
+    let api = BareAPIBuilder::default()
+        .api_key("ВАШ_API_KEY")
+        .captcha_type(CaptchaType::V1)
+        .build()
+        .unwrap();
+
+    let _handle = api
+        .solve("BASE64_СТРОКА".to_string(), |result| {
+            match result {
+                Ok(answer) => println!("Ответ: {answer}"),
+                Err(err) => eprintln!("Ошибка: {err:?}"),
+            }
+        })
+        .await;
